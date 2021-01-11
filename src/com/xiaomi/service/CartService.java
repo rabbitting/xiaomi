@@ -98,30 +98,38 @@ public class CartService {
 		return count;
 	}
 	
-	public boolean refreshCartList(HttpServletRequest request) {
-		List<Cart> cartList = null;
-		try {
-			cartList = findCartByUid(request);
-			if(cartList.size() < 1) 
-				throw new Exception();
-		}catch (Exception e) {
+	public boolean changeNumber(int goodNum,int cartId) {
+		Cart cart = findCartByPreId(cartId);
+		Good good = new GoodService().findGoodByGoodId(cart.getGoodId());
+		int stock = good.getGoodCount();
+		if(goodNum > stock || goodNum <= 0) 
 			return false;
-		}
-		request.setAttribute("cartlist", cartList);
+		cart.setGoodNum(goodNum);
+		cart.setPrice(good.getGoodPrice() * cart.getGoodNum());
+		updateCart(cart);
 		return true;
 	}
 	
-	public boolean changeNumber(int goodNum,int cartId) {
-		Cart cart = findCartByPreId(cartId);
-		int stock = new GoodService().findGoodByGoodId(cart.getGoodId()).getGoodCount();
-		if(goodNum > stock) 
-			return false;
+	public boolean updateCart(Cart cart) {
 		SqlSession session = DBUtil.getSession();
 		CartMapper mapper = session.getMapper(CartMapper.class);
-		cart.setGoodNum(goodNum);
-		mapper.updateByPrimaryKey(cart);
+		int count = mapper.updateByPrimaryKeySelective(cart);
 		session.commit();
-		return true;
+		session.close();
+		return count > 0 ? true:false;
+	}
+	
+	public boolean submitMorder(int uid,List<Integer> cardIdList) {
+		StringBuilder cartOrder = new StringBuilder();
+		for(int cartId:cardIdList) {
+			Cart cart = new Cart();
+			cart.setPreId(cartId);
+			cart.setStatus(1);
+			updateCart(cart);
+			cartOrder.append(cartId+"#");
+		}
+		System.out.println(cartOrder);
+		return false;
 	}
 
 }

@@ -16,9 +16,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	<meta http-equiv="expires" content="0">    
 	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
 	<meta http-equiv="description" content="This is my page">
-	<!--
-	<link rel="stylesheet" type="text/css" href="styles.css">
-	-->
+	<script type="text/javascript" src="./js/jquery-1.11.3.min.js"></script>
 	<title>我的购物车-小米商城</title>
 	<link rel="stylesheet" type="text/css" href="./css/style.css">
 
@@ -59,14 +57,37 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	 			$("#total_price").attr("value",total_price);
 	 			$("#total_count").attr("value",total_count);
 	 		}
-	 		function change_number(id){
-	 			var num = document.getElementById("good_num").value;
-	 			if (num == 0){
+	 		function change_number(obj){
+	 			var father = $(obj).parents("div.content2.center");
+	 			var good_num = obj.value;
+	 			var cart_id = father.prev().prev().val();
+	 			var operate = "change_number";
+	 			if (good_num == 0){
 	 				alert("该宝贝不能减少了哟~");
 	 			}else{
-	 				document.getElementById("selectId").value=id;
-	 				document.getElementById("operate").value="change_number";
-	 				document.forms[0].submit();
+	 				$.ajax({
+	 					url:"CartServlet",
+	 					type:"post",
+	 					data:{
+	 						"operate" : operate,
+	 						"cart_id" : cart_id,
+	 						"good_num" : good_num
+	 					},
+	 					dataType:"json",
+	 					success:function(result){
+	 						//thisObj 本价格对象
+	 						var thisObj = father.find("#price");
+	 						//设置隐藏控件的值
+	 						thisObj.val(result.price);
+	 						//修改显示区域的值
+	 						var pri = thisObj.parent().html();
+	 						var hid = pri.substring(0,pri.lastIndexOf(">")+1);
+	 						thisObj.parent().html(hid + result.price);
+	 					},
+	 					error:function(){
+	 						
+	 					}
+	 				})
 	 			}
 	 		}
 	 		function settlement(){
@@ -110,7 +131,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		<div class="xiantiao"></div>
 		<div class="gwcxqbj">
 		<form method="post" action="CartServlet">
-		<input type="hidden" id="selectId" name="selectId" value="0"/>
 		<input type="hidden" id="operate" name="operate" value="jiesuan"/>
 			<div class="gwcxd center">
 				<div class="top2 center">
@@ -126,24 +146,30 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				</div>
 				<% int count = 0;%>
 				<c:forEach items="${cartlist}" var="list">
-				<% count += 1; %>
-				<input type="hidden" id = "cart_id" name = "cart_id" value ="${list.preId}" />
-				<input type = "hidden" id = "temperate_id" name = "temperate_id" value = "flag"/>
-					<div class="content2 center">
-						<div class="sub_content fl">
-							<input type="checkbox" id = "check" name="check" class="quanxuan" onclick="summary()" />
-						</div>
-						<div class="sub_content fl"><img style="height:80px;width:80px;" src="${list.g.goodImg}"></div>
-						<div class="sub_content fl ft20">${list.g.goodName} ${list.g.goodType} ${list.g.goodColor}</div>
-						<div class="sub_content fl ft20"><input type = "hidden" id= "good_price" name = "good_price" value="${list.g.goodPrice}"/>${list.g.goodPrice}</div>
-						<div class="sub_content fl">
-							<input class="shuliang" type="number" autocomplete="off" id = "good_num" name = "good_num"value="${list.goodNum}" step="1" min="1" max = "5" onblur="change_number(<%=count%>)">
-						</div>
-						<div class="sub_content fl" name ="price"><span><input type = "hidden" id= "price" value="${list.price}"/>${list.price}</span></div>
-						<div class="sub_content fl"><a href="CartServlet?operate=deleteCart&id=${list.preId}"><img src="./image/timg.png"></a></div>
-						<div class="clear"></div>
-					</div>
+					<c:if test="${list.status != 1}">
+						<% count += 1; %>
+						<input type="hidden" id = "cart_id" name = "cart_id" value ="${list.preId}" />
+						<input type = "hidden" id = "temperate_id" name = "temperate_id" value = "flag"/>
+							<div class="content2 center">
+								<div class="sub_content fl">
+									<input type="checkbox" id = "check" name="check" value="${list.preId}" class="quanxuan" onclick="summary()" />
+								</div>
+								<div class="sub_content fl"><img style="height:80px;width:80px;" src="${list.g.goodImg}"></div>
+								<div class="sub_content fl ft20">${list.g.goodName} ${list.g.goodType} ${list.g.goodColor}</div>
+								<div class="sub_content fl ft20"><input type = "hidden" id= "good_price" name = "good_price" value="${list.g.goodPrice}"/>${list.g.goodPrice}</div>
+								<div class="sub_content fl">
+									<input class="shuliang" type="number" autocomplete="off" id = "good_num" name = "good_num" value="${list.goodNum}" step="1" min="1" max = "5" onblur="change_number(this)">
+								</div>
+								<div class="sub_content fl" name ="price"><span><input type = "hidden" id= "price" value="${list.price}"/>${list.price}</span></div>
+								<div class="sub_content fl"><a href="CartServlet?operate=deleteCart&id=${list.preId}"><img src="./image/timg.png"></a></div>
+								<div class="clear"></div>
+							</div>
+						</c:if>
 				</c:forEach>
+				<%
+				if(count <= 0)
+					request.getRequestDispatcher("errorempty.jsp").forward(request, response);
+				%>
 			</div>
 			<div class="jiesuandan mt20 center">
 				<div class="tishi fl ml20">

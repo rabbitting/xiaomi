@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.xiaomi.entity.Users;
+
 
 public class LoginFilter implements Filter{
 	
@@ -49,7 +51,14 @@ public class LoginFilter implements Filter{
 		}
 		
 		if(session.getAttribute("loggedUser") == null) {
-			 ((HttpServletResponse)response).sendRedirect("login.jsp");
+			//设置调试用户
+			Users user = new Users();
+			user.setUid(1);
+			user.setUsername("调试用户");
+			session.setAttribute("loggedUser", user);
+			return;
+			//设置调试用户
+//			 ((HttpServletResponse)response).sendRedirect("login.jsp");
 		}else {
 			chain.doFilter(request, response);
 		}

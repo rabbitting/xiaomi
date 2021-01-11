@@ -106,7 +106,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 	        	<a href="index.jsp" class="btn btn-line-gray">返回首页</a>
 	        </div>
 	        <div class='return cart-computed'>
-	        	<a href="CartServlet?operate=cartList" class="btn btn-primary">去购物车结算</a>
+	        	<a href="CartServlet" class="btn btn-primary">去购物车结算</a>
 	        </div>
 	    </div>
 	    </div>

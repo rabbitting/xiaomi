@@ -64,7 +64,7 @@ width:100%;
 			</ul>
 		</div>
 		<div class="right fr">
-			<div class="gouwuche fr"><a href="CartServlet?operate=cartList">购物车</a></div>
+			<div class="gouwuche fr"><a href="CartServlet">购物车</a></div>
 			
 			<div class="fr">
 				<ul>
